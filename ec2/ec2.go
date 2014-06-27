@@ -15,7 +15,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"github.com/crowdmob/goamz/aws"
+	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -119,7 +119,7 @@ type xmlErrors struct {
 var timeNow = time.Now
 
 func (ec2 *EC2) query(params map[string]string, resp interface{}) error {
-	params["Version"] = "2013-02-01"
+	params["Version"] = "2013-10-15"
 	params["Timestamp"] = timeNow().In(time.UTC).Format(time.RFC3339)
 	endpoint, err := url.Parse(ec2.Region.EC2Endpoint)
 	if err != nil {
@@ -193,25 +193,26 @@ func addParamsList(params map[string]string, label string, ids []string) {
 //
 // See http://goo.gl/Mcm3b for more details.
 type RunInstancesOptions struct {
-	ImageId                string
-	MinCount               int
-	MaxCount               int
-	KeyName                string
-	InstanceType           string
-	SecurityGroups         []SecurityGroup
-	KernelId               string
-	RamdiskId              string
-	UserData               []byte
-	AvailabilityZone       string
-	PlacementGroupName     string
-	Monitoring             bool
-	SubnetId               string
-	DisableAPITermination  bool
-	ShutdownBehavior       string
-	PrivateIPAddress       string
-	IamInstanceProfileArn  string
-	IamInstanceProfileName string
-	BlockDeviceMappings    []BlockDeviceMapping
+	ImageId                  string
+	MinCount                 int
+	MaxCount                 int
+	KeyName                  string
+	InstanceType             string
+	SecurityGroups           []SecurityGroup
+	KernelId                 string
+	RamdiskId                string
+	UserData                 []byte
+	AvailabilityZone         string
+	PlacementGroupName       string
+	Monitoring               bool
+	SubnetId                 string
+	DisableAPITermination    bool
+	ShutdownBehavior         string
+	PrivateIPAddress         string
+	IamInstanceProfileArn    string
+	IamInstanceProfileName   string
+	BlockDeviceMappings      []BlockDeviceMapping
+	AssociatePublicIpAddress bool
 }
 
 // Response to a RunInstances request.
@@ -465,6 +466,25 @@ func (ec2 *EC2) RunInstances(options *RunInstancesOptions) (resp *RunInstancesRe
 	}
 	if options.IamInstanceProfileName != "" {
 		params["IamInstanceProfile.Name"] = options.IamInstanceProfileName
+	}
+
+	if options.AssociatePublicIpAddress == true {
+		params["NetworkInterface.0.DeviceIndex"] = "0"
+		params["NetworkInterface.0.AssociatePublicIpAddress"] = "true"
+
+		// If we're specifying network interface, the subnet id needs
+		// to be associated with the network interface and not the instance
+		params["NetworkInterface.0.SubnetId"] = params["SubnetId"]
+		delete(params, "SubnetId")
+
+		// If we're specifying network interface, the security group ids need
+		// to be associated with the network interface and not the instance
+		for i, g := range options.SecurityGroups {
+			if g.Id != "" {
+				delete(params, "SecurityGroupId."+strconv.Itoa(i+1))
+				params["NetworkInterface.0.SecurityGroupId."+strconv.Itoa(i+1)] = g.Id
+			}
+		}
 	}
 
 	resp = &RunInstancesResp{}
@@ -973,9 +993,10 @@ type SecurityGroupsResp struct {
 // See http://goo.gl/CIdyP for more details.
 type SecurityGroupInfo struct {
 	SecurityGroup
-	OwnerId     string   `xml:"ownerId"`
-	Description string   `xml:"groupDescription"`
-	IPPerms     []IPPerm `xml:"ipPermissions>item"`
+	OwnerId       string         `xml:"ownerId"`
+	Description   string         `xml:"groupDescription"`
+	IPPerms       []IPPerm       `xml:"ipPermissions>item"`
+	IPPermsEgress []IPPermEgress `xml:"ipPermissionsEgress>item"`
 }
 
 // IPPerm represents an allowance within an EC2 security group.
@@ -987,6 +1008,14 @@ type IPPerm struct {
 	ToPort       int                 `xml:"toPort"`
 	SourceIPs    []string            `xml:"ipRanges>item>cidrIp"`
 	SourceGroups []UserSecurityGroup `xml:"groups>item"`
+}
+
+type IPPermEgress struct {
+	Protocol          string              `xml:"ipProtocol"`
+	FromPort          int                 `xml:"fromPort"`
+	ToPort            int                 `xml:"toPort"`
+	DestinationIPs    []string            `xml:"ipRanges>item>cidrIp"`
+	DestinationGroups []UserSecurityGroup `xml:"groups>item"`
 }
 
 // UserSecurityGroup holds a security group and the owner
@@ -1207,6 +1236,28 @@ func (ec2 *EC2) RebootInstances(ids ...string) (resp *SimpleResp, err error) {
 	params := makeParams("RebootInstances")
 	addParamsList(params, "InstanceId", ids)
 	resp = &SimpleResp{}
+	err = ec2.query(params, resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+type ImportKeyPairResp struct {
+	RequestId      string `xml:"requestId"`
+	KeyName        string `xml:"keyName"`
+	KeyFingerprint string `xml:"keyFingerprint"`
+}
+
+func (ec2 *EC2) ImportKeyPair(keyName string, publicKey []byte) (resp *ImportKeyPairResp, err error) {
+	params := makeParams("ImportKeyPair")
+	params["KeyName"] = keyName
+	tmp := make([]byte, b64.EncodedLen(len(publicKey)))
+	b64.Encode(tmp, publicKey)
+	params["PublicKeyMaterial"] = string(tmp)
+
+	fmt.Println(params)
+	resp = &ImportKeyPairResp{}
 	err = ec2.query(params, resp)
 	if err != nil {
 		return nil, err

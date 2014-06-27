@@ -2,9 +2,9 @@ package elb_test
 
 import (
 	"flag"
-	"github.com/crowdmob/goamz/aws"
-	"github.com/crowdmob/goamz/ec2"
-	"github.com/crowdmob/goamz/elb"
+	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
+	"github.jpl.nasa.gov/opslab-cloud/goamz.git/ec2"
+	"github.jpl.nasa.gov/opslab-cloud/goamz.git/elb"
 	"launchpad.net/gocheck"
 )
 

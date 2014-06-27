@@ -146,10 +146,10 @@ func (m *Multi) PutPart(n int, r io.ReadSeeker) (Part, error) {
 	if err != nil {
 		return Part{}, err
 	}
-	return m.putPart(n, r, partSize, md5b64)
+	return m.PutPartMD5(n, r, partSize, md5b64)
 }
 
-func (m *Multi) putPart(n int, r io.ReadSeeker, partSize int64, md5b64 string) (Part, error) {
+func (m *Multi) PutPartMD5(n int, r io.ReadSeeker, partSize int64, md5b64 string) (Part, error) {
 	headers := map[string][]string{
 		"Content-Length": {strconv.FormatInt(partSize, 10)},
 		"Content-MD5":    {md5b64},
@@ -313,7 +313,7 @@ NextSection:
 		}
 
 		// Part wasn't found or doesn't match. Send it.
-		part, err := m.putPart(current, section, partSize, md5b64)
+		part, err := m.PutPartMD5(current, section, partSize, md5b64)
 		if err != nil {
 			return nil, err
 		}

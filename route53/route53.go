@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"github.com/crowdmob/goamz/aws"
+	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
 	"io"
 	"net/http"
 )

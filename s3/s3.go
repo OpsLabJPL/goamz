@@ -17,7 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"github.com/crowdmob/goamz/aws"
+	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
 	"io"
 	"io/ioutil"
 	"log"
@@ -422,11 +422,12 @@ func (b *Bucket) Del(path string) error {
 
 // The ListResp type holds the results of a List bucket operation.
 type ListResp struct {
-	Name      string
-	Prefix    string
-	Delimiter string
-	Marker    string
-	MaxKeys   int
+	Name       string
+	Prefix     string
+	Delimiter  string
+	Marker     string
+	NextMarker string
+	MaxKeys    int
 	// IsTruncated is true if the results have been truncated because
 	// there are more keys and prefixes than can fit in MaxKeys.
 	// N.B. this is the opposite sense to that documented (incorrectly) in
@@ -528,6 +529,73 @@ func (b *Bucket) List(prefix, delim, marker string, max int) (result *ListResp, 
 		return nil, err
 	}
 	return result, nil
+}
+
+// Lists all Keys matching the given prefix.  The prefix can be an empty string.  This function
+// returns two channels, one for the Keys and one for any error that might occur.  Be sure to
+// check the error channel for errors after the Keys channel is closed.  At most one error
+// will be returned.
+func (b *Bucket) ListAllAsync(prefix string) (<-chan Key, <-chan error) {
+	keys := make(chan Key, 1024)
+	errs := make(chan error, 1)
+	go func() {
+		marker := ""
+		for {
+			resp, err := b.List(prefix, "", marker, 1000)
+			if err != nil {
+				errs <- err
+				break
+			}
+			var lastKey Key
+			for _, key := range resp.Contents {
+				lastKey = key
+				keys <- key
+			}
+			if !resp.IsTruncated {
+				break
+			}
+			marker = lastKey.Key
+		}
+		close(keys)
+		close(errs)
+	}()
+	return keys, errs
+}
+
+// Lists all "child" prefixes matching the given prefix according to the given delimiter.
+// The prefix can be an empty string.  If the delimiter is an empty string, it will default
+// to "/".  This function returns two channels, one for the prefix strings and one for any
+// error that might occur.  Be sure to check the error channel for errors after the Keys
+// channel is closed.  At most one error will be returned.
+func (b *Bucket) ListAllChildrenAsync(prefix, delim string) (<-chan string, <-chan error) {
+	if len(delim) == 0 {
+		delim = "/"
+	}
+	children := make(chan string, 1024)
+	errs := make(chan error, 1)
+	go func() {
+		marker := ""
+		for {
+			resp, err := b.List(prefix, delim, marker, 1000)
+			if err != nil {
+				errs <- err
+				break
+			}
+			for _, key := range resp.Contents {
+				children <- key.Key
+			}
+			for _, child := range resp.CommonPrefixes {
+				children <- child
+			}
+			if !resp.IsTruncated {
+				break
+			}
+			marker = resp.NextMarker
+		}
+		close(children)
+		close(errs)
+	}()
+	return children, errs
 }
 
 // The VersionsResp type holds the results of a list bucket Versions operation.
@@ -849,7 +917,8 @@ func (s3 *S3) run(req *request, resp interface{}) (*http.Response, error) {
 		dump, _ := httputil.DumpResponse(hresp, true)
 		log.Printf("} -> %s\n", dump)
 	}
-	if hresp.StatusCode != 200 && hresp.StatusCode != 204 {
+	// Need to accept status code 206 for partial GET requests to succeed
+	if hresp.StatusCode != 200 && hresp.StatusCode != 204 && hresp.StatusCode != 206 {
 		return nil, buildError(hresp)
 	}
 	if resp != nil {
