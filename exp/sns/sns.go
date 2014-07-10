@@ -27,7 +27,7 @@ package sns
 import (
 	"encoding/xml"
 	"errors"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
+	"github.com/opslabjpl/goamz.git/aws"
 	"net/http"
 	"net/url"
 	"strconv"

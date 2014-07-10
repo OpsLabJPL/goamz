@@ -2,10 +2,10 @@ package ec2_test
 
 import (
 	"fmt"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/ec2"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/ec2/ec2test"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/testutil"
+	"github.com/opslabjpl/goamz.git/aws"
+	"github.com/opslabjpl/goamz.git/ec2"
+	"github.com/opslabjpl/goamz.git/ec2/ec2test"
+	"github.com/opslabjpl/goamz.git/testutil"
 	"launchpad.net/gocheck"
 	"regexp"
 	"sort"

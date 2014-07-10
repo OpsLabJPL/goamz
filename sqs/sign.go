@@ -4,7 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
+	"github.com/opslabjpl/goamz.git/aws"
 	"sort"
 	"strings"
 )

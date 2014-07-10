@@ -6,7 +6,7 @@ package elbtest
 import (
 	"encoding/xml"
 	"fmt"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/elb"
+	"github.com/opslabjpl/goamz.git/elb"
 	"net"
 	"net/http"
 	"net/url"

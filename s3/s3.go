@@ -17,7 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
+	"github.com/opslabjpl/goamz.git/aws"
 	"io"
 	"io/ioutil"
 	"log"

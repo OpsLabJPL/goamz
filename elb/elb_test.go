@@ -1,8 +1,8 @@
 package elb_test
 
 import (
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/elb"
+	"github.com/opslabjpl/goamz.git/aws"
+	"github.com/opslabjpl/goamz.git/elb"
 	"launchpad.net/gocheck"
 	"time"
 )

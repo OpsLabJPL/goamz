@@ -4,7 +4,7 @@ package elb
 import (
 	"encoding/xml"
 	"fmt"
-	"github.jpl.nasa.gov/opslab-cloud/goamz.git/aws"
+	"github.com/opslabjpl/goamz.git/aws"
 	"net/http"
 	"net/url"
 	"strconv"
