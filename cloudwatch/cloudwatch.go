@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/feyeleanor/sets"
-	"github.com/opslabjpl/goamz.git/aws"
+	"github.com/opslabjpl/goamz/aws"
 	"strconv"
 	"time"
 )

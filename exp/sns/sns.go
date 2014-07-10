@@ -27,7 +27,7 @@ package sns
 import (
 	"encoding/xml"
 	"errors"
-	"github.com/opslabjpl/goamz.git/aws"
+	"github.com/opslabjpl/goamz/aws"
 	"net/http"
 	"net/url"
 	"strconv"

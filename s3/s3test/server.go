@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"github.com/opslabjpl/goamz.git/s3"
+	"github.com/opslabjpl/goamz/s3"
 	"io"
 	"io/ioutil"
 	"log"

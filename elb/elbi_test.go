@@ -2,9 +2,9 @@ package elb_test
 
 import (
 	"flag"
-	"github.com/opslabjpl/goamz.git/aws"
-	"github.com/opslabjpl/goamz.git/ec2"
-	"github.com/opslabjpl/goamz.git/elb"
+	"github.com/opslabjpl/goamz/aws"
+	"github.com/opslabjpl/goamz/ec2"
+	"github.com/opslabjpl/goamz/elb"
 	"launchpad.net/gocheck"
 )
 

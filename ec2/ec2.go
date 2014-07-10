@@ -15,7 +15,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"github.com/opslabjpl/goamz.git/aws"
+	"github.com/opslabjpl/goamz/aws"
 	"log"
 	"net/http"
 	"net/http/httputil"

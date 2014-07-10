@@ -13,7 +13,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/opslabjpl/goamz.git/aws"
+	"github.com/opslabjpl/goamz/aws"
 	"io"
 	"io/ioutil"
 	"log"

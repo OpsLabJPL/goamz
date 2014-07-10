@@ -1,7 +1,7 @@
 package dynamodb_test
 
 import (
-	"github.com/opslabjpl/goamz.git/dynamodb"
+	"github.com/opslabjpl/goamz/dynamodb"
 	"launchpad.net/gocheck"
 )
 
